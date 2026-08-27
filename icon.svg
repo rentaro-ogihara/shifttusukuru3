@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="box" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8b884"/><stop offset="1" stop-color="#c98f4f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#e07b32"/>
+  <!-- 段ボール箱 -->
+  <rect x="96" y="150" width="320" height="250" rx="18" fill="url(#box)" stroke="#a06b3a" stroke-width="10"/>
+  <!-- フタ -->
+  <rect x="96" y="150" width="320" height="58" rx="10" fill="#dcaociety"/>
+  <rect x="96" y="150" width="320" height="58" rx="10" fill="#d9a465" stroke="#a06b3a" stroke-width="8"/>
+  <!-- ガムテープ -->
+  <rect x="228" y="140" width="56" height="270" fill="#3a6ea5" opacity="0.92"/>
+  <!-- カレンダーのマス -->
+  <g fill="#fff" opacity="0.95">
+    <rect x="132" y="250" width="52" height="42" rx="7"/>
+    <rect x="196" y="250" width="52" height="42" rx="7"/>
+    <rect x="296" y="250" width="52" height="42" rx="7"/>
+    <rect x="360" y="250" width="52" height="42" rx="7"/>
+    <rect x="132" y="308" width="52" height="42" rx="7"/>
+    <rect x="196" y="308" width="52" height="42" rx="7"/>
+    <rect x="296" y="308" width="52" height="42" rx="7"/>
+    <rect x="360" y="308" width="52" height="42" rx="7"/>
+  </g>
+  <!-- チェック（作成済み） -->
+  <path d="M312 268 l16 16 l34 -36" stroke="#5b8a3c" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
