@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EBL シフト便 — シフト自動作成</title>
 <meta name="description" content="倉庫パート・アルバイトのシフトを必要時間から自動作成するツール">
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#e07b32">
+<meta name="theme-color" content="#1b2331">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,9 +15,8 @@
 <style>
   body{margin:0;background:#d8b78a;}
   #root:empty::after{content:"読み込み中…";display:block;padding:40px;font-family:sans-serif;color:#7a5c33;}
-  /* 更新のお知らせ */
   #upd{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:none;
-    background:#3a6ea5;color:#fff;border-radius:12px;padding:11px 16px;font-family:'Noto Sans JP',sans-serif;
+    background:#3a6ea5;color:#fff;border-radius:12px;padding:11px 16px;font-family:sans-serif;
     font-size:13.5px;font-weight:700;box-shadow:0 6px 18px #0004;align-items:center;gap:10px;}
   #upd button{background:#fff;color:#3a6ea5;border:none;border-radius:8px;padding:6px 13px;font-weight:800;cursor:pointer;font-family:inherit;}
 </style>
@@ -17185,21 +17183,17 @@ window.React=__req("react");var __rdc=__req("react-dom-client");window.ReactDOM=
 </script>
 
 <script>
-// ---- 保存：ブラウザ標準(localStorage) ----
 if (!window.storage) {
   window.storage = {
     get: async (k) => { const v = localStorage.getItem(k); if (v === null) throw new Error("not found"); return { key: k, value: v }; },
     set: async (k, v) => { localStorage.setItem(k, v); return { key: k, value: v }; },
   };
 }
-// ---- Service Worker 登録（オフライン動作＋ホーム画面追加） ----
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
     navigator.serviceWorker.register("sw.js").then(function (reg) {
-      // 新バージョンを検知したら通知を出す
       reg.addEventListener("updatefound", function () {
-        var nw = reg.installing;
-        if (!nw) return;
+        var nw = reg.installing; if (!nw) return;
         nw.addEventListener("statechange", function () {
           if (nw.state === "installed" && navigator.serviceWorker.controller) {
             document.getElementById("upd").style.display = "flex";
@@ -17576,11 +17570,12 @@ const GUIDE_STEPS = [
     { n: "5", t: "出勤・休みを設定する（毎週のパターン）", d: "その人の行を開くと2段の設定があります。上の「毎週のパターン」は曜日ごとの設定で、一度決めれば毎週ずっと自動で使われます。曜日ボタンをクリックするたびに 指定なし → 🟩必ず出勤 → 🟥必ず休み → 🟧希望休 と切りかわります。例：毎週月・水・金は必ず出勤、火・木は必ず休み。下の「この週だけ」は、その週かぎりの変更です。パターンが効いている日は点線で表示され、クリックするとその週だけ上書きできます（来週にはひびきません）。", img: "off" },
     { n: "6", t: "シフトを自動作成", d: "オレンジの大きなボタンを押すだけ！ 条件（休み・日数・時間）を守ったシフトが自動でできます。気に入らなければ「別パターン」で何度でも作り直せます。", img: "gen" },
     { n: "7", t: "シフト表の見方", d: "タブで「すべて／本社／八寸町」を切りかえられます。いちばん下の「充足/必要」の行で、時間が足りているかチェック：緑＝ぴったり、青＝多め、赤＝足りない。右はしの「時間」列には、その人の週の合計時間と日数が出ます。", img: "table" },
-    { n: "8", t: "手直しする", d: "勤務セルをクリックすると、その日の時刻を自由に変えられます（時間は自動計算）。「休みにする」ボタンでその日をお休みに。休みのセルをクリックすると勤務にもどせます。日数を超えると⚠が出ますが、繁忙期はそのまま追加できます。", img: "edit" },
-    { n: "9", t: "シフトを保存・呼び出す・上書きする", d: "「このシフトを保存」で名前をつけて記憶できます（例：6月2週目）。「呼び出す」ボタンで一覧が開き、いつでも元どおりにもどせます。呼び出したあとに直したら、オレンジの「上書き保存」を押せば同じ名前のまま更新されます（確認メッセージが出ます）。別バージョンとして残したいときだけ「新しい名前で保存」を使ってください。画面の「📂編集中：○○」で、いまどのシフトを編集しているかわかります。", img: "lib" },
-    { n: "10", t: "印刷・PDF・CSV", d: "「印刷/PDF」から、本社倉庫だけ・八寸町倉庫だけ・両方まとめて、をえらべます。開いたページで印刷、またはPDF保存（ファイル名は自動で「日付_倉庫名」になります）。Excelで使いたいときは「CSV出力」。", img: "print" },
-    { n: "11", t: "データはどこに保存される？", d: "入力した内容は、このファイルを開いたパソコンのブラウザに自動で保存されます（右上に「💾保存しました」と出ます）。次に開くと続きから使えます。※別のパソコンには引きつがれないので注意してください。", img: null },
-    { n: "12", t: "希望休をなるべく通すコツ", d: "「必要な時間数」の下の緑の数字は、その日に希望休の人を全員休ませても確保できる時間です。⚠赤になっている日は希望休が集中していて、全員は休ませられません（誰かに出てもらう必要があります）。作成後に「希望休が◯件通っていません」と出たら、誰がどの日に出勤になったかが表示されます。その日の必要時間を減らすか、他の人にお願いするか判断してください。なお希望休は『なるべく守る』設定です。ぜったいに休ませたい日は🟥「必ず休み」にしてください。", img: null },
+    { n: "8", t: "今日のシフトをすぐ見る", d: "シフト表の上にある「☀️ 今日のシフト」を押すと、今日出勤する人が倉庫ごとに一覧で出ます（名前・時間・何時間か、お休みの人も分かります）。同時に、表の今日の列がオレンジ色で強調されるので、どこを見ればいいか一目で分かります。今日が別の週の場合は、自動でその週に切り替えます（保存してあるシフトがあれば呼び出します）。朝礼や当日の確認にどうぞ。", img: null },
+    { n: "9", t: "手直しする", d: "勤務セルをクリックすると、その日の時刻を自由に変えられます（時間は自動計算）。「休みにする」ボタンでその日をお休みに。休みのセルをクリックすると勤務にもどせます。日数を超えると⚠が出ますが、繁忙期はそのまま追加できます。", img: "edit" },
+    { n: "10", t: "シフトを保存・呼び出す・上書きする", d: "「このシフトを保存」で名前をつけて記憶できます（例：6月2週目）。「呼び出す」ボタンで一覧が開き、いつでも元どおりにもどせます。呼び出したあとに直したら、オレンジの「上書き保存」を押せば同じ名前のまま更新されます（確認メッセージが出ます）。別バージョンとして残したいときだけ「新しい名前で保存」を使ってください。画面の「📂編集中：○○」で、いまどのシフトを編集しているかわかります。", img: "lib" },
+    { n: "11", t: "印刷・PDF・CSV", d: "「印刷/PDF」から、本社倉庫だけ・八寸町倉庫だけ・両方まとめて、をえらべます。開いたページで印刷、またはPDF保存（ファイル名は自動で「日付_倉庫名」になります）。Excelで使いたいときは「CSV出力」。", img: "print" },
+    { n: "12", t: "データはどこに保存される？", d: "入力した内容は、このファイルを開いたパソコンのブラウザに自動で保存されます（右上に「💾保存しました」と出ます）。次に開くと続きから使えます。※別のパソコンには引きつがれないので注意してください。", img: null },
+    { n: "13", t: "希望休をなるべく通すコツ", d: "「必要な時間数」の下の緑の数字は、その日に希望休の人を全員休ませても確保できる時間です。⚠赤になっている日は希望休が集中していて、全員は休ませられません（誰かに出てもらう必要があります）。作成後に「希望休が◯件通っていません」と出たら、誰がどの日に出勤になったかが表示されます。その日の必要時間を減らすか、他の人にお願いするか判断してください。なお希望休は『なるべく守る』設定です。ぜったいに休ませたい日は🟥「必ず休み」にしてください。", img: null },
 ];
 /* ============================================================================
  *  small helpers
@@ -17599,6 +17594,8 @@ function App() {
     const [seed, setSeed] = useState(7);
     const [picker, setPicker] = useState(null); // `${id}|${date}` (勤務場所が2つの人の追加先選択)
     const [view, setView] = useState("all"); // "all" | 拠点名（シフト表の表示切り替え）
+    const [showToday, setShowToday] = useState(false); // 「今日のシフト」パネル
+    const todayISO = useMemo(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }, []);
     const [overrides, setOverrides] = useState({}); // `${loc}|${date}|${id}` → {start,end} 手動の時刻上書き
     const [editing, setEditing] = useState(null); // 時刻編集中のセル `${loc}|${date}|${id}`
     const [loaded, setLoaded] = useState(false);
@@ -17724,6 +17721,26 @@ function App() {
     };
     const deleteShift = (id) => { setSavedShifts((list) => { const next = list.filter((r) => r.id !== id); persistLib(next); return next; }); if (currentShift && currentShift.id === id)
         setCurrentShift(null); };
+    // 「今日のシフト」：今日が今の週になければ、今日を含む週へ切り替える（保存済みがあれば呼び出す）
+    const goToday = () => {
+        const inWeek = dates.includes(todayISO);
+        if (!inWeek) {
+            const rec = savedShifts.find((r) => datesOfWeek(r.weekStart, 7).includes(todayISO));
+            if (rec) {
+                loadShift(rec);
+                setShowToday(true);
+                return;
+            }
+            // 保存が無ければ今日を含む週（月曜始まり）に移動
+            const d = new Date(todayISO + "T00:00:00Z");
+            const shift = (d.getUTCDay() + 6) % 7; // 月曜=0
+            const mon = addDays(todayISO, -shift);
+            setWeekStart(mon);
+            setSaveMsg("今日を含む週に切り替えました。「シフトを自動作成」を押してください");
+            setTimeout(() => setSaveMsg(""), 3500);
+        }
+        setShowToday(true);
+    };
     const doGenerate = useCallback((s) => { const { assignment: a } = generate(input, { seed: s !== null && s !== void 0 ? s : seed }); setAssignment(a); setOverrides({}); setEditing(null); }, [input, seed]);
     useEffect(() => { if (loaded && !didGen.current) {
         didGen.current = true;
@@ -18195,6 +18212,63 @@ function App() {
                                 tight.map((d) => `${md(d)}(${dowOf(d)})`).join("・")) : null;
                         })()))),
                 React.createElement("p", { className: "edit-hint" }, "\u30BB\u30EB\u3092\u30AF\u30EA\u30C3\u30AF\u3067\u7DE8\u96C6\u3067\u304D\u307E\u3059\uFF08\u52E4\u52D9 \u2192 \u4F11\u307F\uFF0F\u4F11\u307F \u2192 \u52E4\u52D9\uFF09\u3002"),
+                React.createElement("div", { className: "today-bar" },
+                    React.createElement("button", { className: `btn today-btn ${showToday ? "on" : ""}`, onClick: showToday ? () => setShowToday(false) : goToday }, "\u2600\uFE0F \u4ECA\u65E5\u306E\u30B7\u30D5\u30C8"),
+                    showToday && React.createElement("span", { className: "today-date" },
+                        todayISO.slice(5).replace("-", "/"),
+                        "\uFF08",
+                        dowOf(todayISO),
+                        "\uFF09")),
+                showToday && (() => {
+                    const inWeek = dates.includes(todayISO);
+                    if (!inWeek)
+                        return React.createElement("div", { className: "today-panel none" },
+                            "\u4ECA\u65E5\uFF08",
+                            todayISO.slice(5).replace("-", "/"),
+                            "\uFF09\u306F\u3053\u306E\u9031\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u4E0A\u306E\u300C\u9031\u306E\u958B\u59CB\u65E5\u300D\u3067\u4ECA\u65E5\u3092\u542B\u3080\u9031\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+                    const list = LOCATIONS.map((loc) => {
+                        var _a;
+                        return ({
+                            loc,
+                            staff: (((_a = assignment === null || assignment === void 0 ? void 0 : assignment[loc]) === null || _a === void 0 ? void 0 : _a[todayISO]) || []).map((id) => ({ e: empById[id], t: timesOf(loc, todayISO, id), h: hoursOf(loc, todayISO, id) })).filter((x) => x.e)
+                                .sort((a, b) => a.t.start.localeCompare(b.t.start)),
+                            need: req[loc][dates.indexOf(todayISO)] || 0,
+                            cov: cellCov(loc, todayISO),
+                        });
+                    }).filter((x) => x.staff.length || x.need > 0);
+                    const total = list.reduce((s, x) => s + x.staff.length, 0);
+                    return (React.createElement("div", { className: "today-panel" },
+                        React.createElement("div", { className: "tp-h" },
+                            "\u2600\uFE0F \u4ECA\u65E5\u306E\u51FA\u52E4\uFF1A",
+                            total,
+                            "\u540D"),
+                        list.length === 0 && React.createElement("div", { className: "tp-empty" }, "\u4ECA\u65E5\u306F\u51FA\u52E4\u306E\u4E88\u5B9A\u304C\u3042\u308A\u307E\u305B\u3093\uFF08\u4F11\u696D\u65E5\uFF09"),
+                        list.map((x) => (React.createElement("div", { className: "tp-loc", key: x.loc },
+                            React.createElement("div", { className: "tp-loc-h", style: { color: LOC_COLOR[x.loc], borderColor: LOC_COLOR[x.loc] } },
+                                React.createElement(MapPin, { size: 13 }),
+                                " ",
+                                x.loc,
+                                React.createElement("span", { className: `tp-cov ${x.cov < x.need ? "short" : "ok"}` },
+                                    x.cov,
+                                    "/",
+                                    x.need,
+                                    "h"),
+                                React.createElement("span", { className: "tp-n" },
+                                    x.staff.length,
+                                    "\u540D")),
+                            x.staff.length === 0 ? React.createElement("div", { className: "tp-empty" }, "\u51FA\u52E4\u8005\u306A\u3057") : (React.createElement("div", { className: "tp-list" }, x.staff.map((s, i) => (React.createElement("div", { className: "tp-row", key: i },
+                                React.createElement("b", null, s.e.name),
+                                React.createElement("span", { className: "tp-time" },
+                                    s.t.start,
+                                    "\u301C",
+                                    s.t.end),
+                                React.createElement("span", { className: "tp-h2" },
+                                    s.h,
+                                    "h"))))))))),
+                        React.createElement("div", { className: "tp-off" },
+                            "\u304A\u4F11\u307F\uFF1A",
+                            emps.filter((e) => !whereAssigned(todayISO, e.id)).map((e) => e.name).join("・") || "なし")));
+                })(),
                 React.createElement("div", { className: "vtabs" }, ["all", ...LOCATIONS].map((v) => (React.createElement("button", { key: v, className: `vtab ${view === v ? "on" : ""}`, style: view === v && v !== "all" ? { background: LOC_COLOR[v], borderColor: LOC_COLOR[v] } : undefined, onClick: () => setView(v) }, v === "all" ? "🏭 すべて" : `📍 ${v}`)))),
                 React.createElement("div", { className: "tbl-wrap" },
                     React.createElement("table", { className: "mx" },
@@ -18203,10 +18277,11 @@ function App() {
                                 React.createElement("th", { className: "c-nm" }, "\u6C0F\u540D"),
                                 React.createElement("th", { className: "c-pos" }, "\u30DD\u30B8\u30B7\u30E7\u30F3"),
                                 React.createElement("th", { className: "c-wh" }, "\u5009\u5EAB"),
-                                dates.map((d) => React.createElement("th", { key: d, className: isWeekend(d) ? "we" : "" },
+                                dates.map((d) => React.createElement("th", { key: d, className: `${isWeekend(d) ? "we" : ""} ${d === todayISO ? "today" : ""}` },
                                     dowOf(d),
                                     React.createElement("br", null),
-                                    React.createElement("span", { className: "hd" }, md(d)))),
+                                    React.createElement("span", { className: "hd" }, md(d)),
+                                    d === todayISO && React.createElement("span", { className: "tdmark" }, "\u4ECA\u65E5"))),
                                 React.createElement("th", { className: "c-tot" }, "\u6642\u9593"))),
                         React.createElement("tbody", null,
                             viewEmps.map((e) => (React.createElement("tr", { key: e.id },
@@ -18221,7 +18296,7 @@ function App() {
                                 dates.map((d) => {
                                     const loc = whereAssigned(d, e.id);
                                     const off = e.off[d];
-                                    const we = isWeekend(d) ? "we" : "";
+                                    const we = `${isWeekend(d) ? "we" : ""} ${d === todayISO ? "tdcol" : ""}`;
                                     const key = `${e.id}|${d}`;
                                     if (loc && view !== "all" && loc !== view) // 他拠点で勤務中（この表示では編集不可）
                                         return React.createElement("td", { key: d, className: `cell other ${we}`, title: `${loc}で勤務中` },
@@ -18270,7 +18345,7 @@ function App() {
                                 React.createElement("td", { className: "c-nm", colSpan: 3, style: { color: LOC_COLOR[loc] } },
                                     loc,
                                     "\u3000\u5145\u8DB3/\u5FC5\u8981"),
-                                dates.map((d, i) => { const need = req[loc][i]; const cov = cellCov(loc, d); const cls = need === 0 ? "zero" : cov < need ? "short" : cov > need ? "over" : "met"; return React.createElement("td", { key: d, className: `covc ${cls}` }, need === 0 ? "—" : `${cov}/${need}`); }),
+                                dates.map((d, i) => { const need = req[loc][i]; const cov = cellCov(loc, d); const cls = need === 0 ? "zero" : cov < need ? "short" : cov > need ? "over" : "met"; return React.createElement("td", { key: d, className: `covc ${cls} ${d === todayISO ? "tdcol" : ""}` }, need === 0 ? "—" : `${cov}/${need}`); }),
                                 React.createElement("td", null))))))),
                 evalResult.hard.length > 0 && (React.createElement("div", { className: "viols" },
                     React.createElement("div", { className: "v-h" },
@@ -18298,9 +18373,9 @@ function Stat({ icon, k, v, sub, tone }) {
             sub && React.createElement("small", null, sub)));
 }
 const CSS = `
-
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 .ss{--orange:#e07b32;--orange-soft:#fbe6d4;--blue:#3a6ea5;--blue-soft:#e3edf6;--bg:#d8b78a;--panel:#f3e2c7;--panel2:#ecd6b4;--line:#c79a64;--ink:#5a3f22;--muted:#9c7a4e;--green:#5b8a3c;--red:#c0492f;--we:#e8cfa6;
-  font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;color:var(--ink);background:var(--bg);
+  font-family:'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif;color:var(--ink);background:var(--bg);
   background-image:
     linear-gradient(90deg,#0000 0 49.6%,#00000010 49.6% 50.4%,#0000 50.4%),
     repeating-linear-gradient(0deg,#0000 0 13px,#00000008 13px 14px),
@@ -18310,7 +18385,7 @@ const CSS = `
 .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
 .brand{display:flex;align-items:center;gap:13px;}
 .logo{width:50px;height:50px;border-radius:12px;background:repeating-linear-gradient(45deg,#cf8f54 0 6px,#c2854d 6px 12px);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 3px #00000018,0 4px 0 #a06b3a;border:2px solid #b07c44;transform:rotate(-3deg);}
-.brand h1{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;font-size:24px;margin:0;letter-spacing:.02em;text-shadow:0 1px 0 #fff6;}
+.brand h1{font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:24px;margin:0;letter-spacing:.02em;text-shadow:0 1px 0 #fff6;}
 .brand p{margin:2px 0 0;color:var(--muted);font-size:12.5px;}
 .saved{display:inline-flex;align-items:center;gap:6px;background:#e3efd6;color:var(--green);border:1px solid #aecb8c;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;}
 .save-msg{background:#fff3da;border:1px dashed #d0a45e;color:#8a5a00;border-radius:10px;padding:9px 14px;font-size:12.5px;margin-bottom:14px;}
@@ -18318,22 +18393,22 @@ const CSS = `
 .btn.guide-btn:hover{background:#f0d093;} .btn.guide-btn:active{box-shadow:0 1px 0 #c79a64;}
 .gmask{position:fixed;inset:0;background:#3a2f23aa;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
 .guide{background:var(--panel);background-image:repeating-linear-gradient(0deg,#0000 0 22px,#00000005 22px 23px);border:3px solid var(--line);border-radius:16px;max-width:760px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 6px 0 #b8884c,0 22px 50px #0006;overflow:hidden;}
-.g-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;font-size:17px;color:#6b4a23;background:linear-gradient(180deg,#f0dcbe,#ead2ac);border-bottom:2px dashed var(--line);}
-.g-x{background:#fffdf6;border:2px solid var(--line);border-radius:9px;padding:7px 13px;font-size:13px;font-weight:800;cursor:pointer;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;color:var(--ink);box-shadow:0 2px 0 #c79a6455;}
+.g-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:17px;color:#6b4a23;background:linear-gradient(180deg,#f0dcbe,#ead2ac);border-bottom:2px dashed var(--line);}
+.g-x{background:#fffdf6;border:2px solid var(--line);border-radius:9px;padding:7px 13px;font-size:13px;font-weight:800;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;color:var(--ink);box-shadow:0 2px 0 #c79a6455;}
 .g-x:active{box-shadow:none;transform:translateY(2px);}
 .g-body{overflow-y:auto;padding:18px;}
 .g-intro{background:var(--blue-soft);border:1.5px solid #a9c3dd;border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:700;color:#2d567f;margin:0 0 16px;}
 .g-step{display:flex;gap:13px;margin-bottom:20px;}
-.g-num{flex:0 0 38px;height:38px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;font-size:17px;border:2px solid #b5611f;box-shadow:0 3px 0 #a8551a;}
+.g-num{flex:0 0 38px;height:38px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:17px;border:2px solid #b5611f;box-shadow:0 3px 0 #a8551a;}
 .g-content{flex:1;min-width:0;}
-.g-content h3{margin:6px 0 6px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-size:16px;font-weight:800;color:#5a3f22;}
+.g-content h3{margin:6px 0 6px;font-family:'M PLUS Rounded 1c',sans-serif;font-size:16px;font-weight:800;color:#5a3f22;}
 .g-content p{margin:0 0 9px;font-size:13.5px;line-height:1.75;}
 .g-img{width:100%;border:2px solid var(--line);border-radius:10px;box-shadow:0 3px 0 #c79a6455;display:block;background:#fff;}
 /* 段ボール箱風カード：クラフト色＋ガムテープ＋ステッチ縁 */
 .card{background:var(--panel);background-image:repeating-linear-gradient(0deg,#0000 0 22px,#00000005 22px 23px),linear-gradient(180deg,#ffffff20,#0000 40%);border:2px solid var(--line);border-radius:14px;margin-bottom:18px;box-shadow:0 3px 0 #b8884c,0 8px 18px #5a3f2222;overflow:hidden;position:relative;}
 .card::after{content:"";position:absolute;inset:5px;border:1.5px dashed #b8915c80;border-radius:9px;pointer-events:none;}
 .card::before{content:"";display:block;height:22px;background:linear-gradient(180deg,#e7be84,#dcae6e);border-bottom:2px solid #b8884c;box-shadow:inset 0 -3px 6px #00000012;position:relative;}
-.card-h{display:flex;align-items:center;gap:9px;padding:11px 17px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;font-size:14.5px;color:#6b4a23;border-bottom:2px dashed var(--line);background:linear-gradient(180deg,#f0dcbe,#ead2ac);position:relative;}
+.card-h{display:flex;align-items:center;gap:9px;padding:11px 17px;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:14.5px;color:#6b4a23;border-bottom:2px dashed var(--line);background:linear-gradient(180deg,#f0dcbe,#ead2ac);position:relative;}
 .card-h svg{color:var(--orange);}
 .card-h::before{content:"";position:absolute;left:50%;top:-12px;transform:translateX(-50%) rotate(-1deg);width:120px;height:22px;background:#e8d4a8cc;border:1px solid #cdb178;box-shadow:0 1px 3px #00000018;opacity:.7;}
 .card-b{padding:17px;position:relative;}
@@ -18367,7 +18442,7 @@ const CSS = `
 .s-tag.blue{background:var(--blue-soft);border-color:#a9c3dd;color:#2d567f;}
 .s-tag.red{background:#fbdcdc;border-color:#e0a5a5;color:#a33;}
 .s-tag.lock{background:#e7dcf7;border-color:#b9a6dd;color:#5a3f8a;}
-.s-edit{flex:0 0 auto;border:1.5px solid var(--line);background:#fffdf6;border-radius:8px;padding:4px 12px;font-size:11.5px;font-weight:800;color:var(--muted);font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;transition:.12s;}
+.s-edit{flex:0 0 auto;border:1.5px solid var(--line);background:#fffdf6;border-radius:8px;padding:4px 12px;font-size:11.5px;font-weight:800;color:var(--muted);font-family:'M PLUS Rounded 1c',sans-serif;transition:.12s;}
 .emp-detail{border-top:1.5px dashed var(--line);margin-top:9px;padding-top:5px;}
 .emp{border:2px solid var(--line);border-radius:12px;padding:9px 12px;background:#f6e8cf;background-image:repeating-linear-gradient(0deg,#0000 0 19px,#00000005 19px 20px);box-shadow:inset 0 1px 0 #ffffff66,0 2px 0 #c79a6455;}
 .emp.open{padding:12px 14px;background:#fbf3e4;box-shadow:inset 0 1px 0 #ffffff88,0 3px 0 #c79a6466;}
@@ -18426,33 +18501,33 @@ const CSS = `
 .box{width:14px;height:14px;border-radius:5px;border:1.5px solid var(--line);}
 .box.work{background:#fff;} .box.soft{background:var(--orange-soft);border-color:#f9a86a;} .box.hard{background:#fde7e7;border-color:#ef8d8d;} .box.must{background:#dff0d8;border-color:#8fc46f;}
 .actions{display:flex;gap:11px;align-items:center;margin:6px 0 22px;flex-wrap:wrap;}
-.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;border:2px solid transparent;padding:11px 18px;transition:transform .08s,box-shadow .08s;}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;border:2px solid transparent;padding:11px 18px;transition:transform .08s,box-shadow .08s;}
 .btn:active{transform:translateY(2px);}
 .btn.primary{background:var(--orange);color:#fff;border-color:#b5611f;box-shadow:0 4px 0 #a8551a;} .btn.primary:hover{background:#d6722c;} .btn.primary:active{box-shadow:0 1px 0 #a8551a;}
 .btn.big{padding:14px 26px;font-size:16px;}
 .btn.ghost{background:#fbf2e0;border-color:var(--line);color:var(--ink);box-shadow:0 3px 0 #c79a6455;} .btn.ghost:hover{background:#f6e8cf;} .btn.ghost:active{box-shadow:0 1px 0 #c79a6455;}
 .btn.sm{padding:8px 13px;font-size:13px;}
 .result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-.result-head h2{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-size:21px;font-weight:800;margin:0;}
+.result-head h2{font-family:'M PLUS Rounded 1c',sans-serif;font-size:21px;font-weight:800;margin:0;}
 .result-head .wk{font-size:14px;color:var(--muted);font-weight:500;}
 .soft-alert{background:#fff2e8;border:2px solid #e8a06a;border-radius:12px;padding:13px 16px;margin-bottom:16px;box-shadow:0 3px 0 #d98c52;}
-.sa-h{display:flex;align-items:center;gap:8px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;font-size:15px;color:#b5510f;margin-bottom:9px;}
+.sa-h{display:flex;align-items:center;gap:8px;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;color:#b5510f;margin-bottom:9px;}
 .sa-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
 .sa-row{font-size:13px;background:#fff;border:1px solid #f0c9a8;border-radius:8px;padding:6px 11px;}
 .sa-row b{color:#b5510f;}
 .sa-tip{font-size:12.5px;color:#8a5a2a;background:#fffaf4;border:1px dashed #e0b48c;border-radius:9px;padding:9px 12px;line-height:1.7;}
 .sa-tight{margin-top:6px;font-weight:800;color:#b5510f;}
 .result-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-.cur-badge{display:inline-block;margin-left:10px;background:var(--blue-soft);color:#2d567f;border:1.5px solid #a9c3dd;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;vertical-align:middle;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;}
+.cur-badge{display:inline-block;margin-left:10px;background:var(--blue-soft);color:#2d567f;border:1.5px solid #a9c3dd;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:800;vertical-align:middle;font-family:'M PLUS Rounded 1c',sans-serif;}
 .lib-now{display:inline-block;margin-left:8px;background:var(--orange);color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;vertical-align:middle;}
 .print-group{display:inline-flex;align-items:center;gap:6px;background:#fbf2e0;border:2px dashed var(--line);border-radius:11px;padding:5px 8px;}
-.pg-label{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;color:var(--muted);font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;}
+.pg-label{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:800;color:var(--muted);font-family:'M PLUS Rounded 1c',sans-serif;}
 .btn.pbn{background:#fffdf6;border:2px solid var(--line);color:var(--ink);box-shadow:0 2px 0 #c79a6455;padding:7px 11px;}
 .btn.pbn:hover{background:#fff;} .btn.pbn:active{box-shadow:0 1px 0 #c79a6455;}
 .btn.save{background:var(--blue);color:#fff;border-color:#2d567f;box-shadow:0 4px 0 #2d567f;}
 .btn.save:hover{background:#33618f;} .btn.save:active{box-shadow:0 1px 0 #2d567f;}
 .lib{background:var(--panel);border:2px solid var(--line);border-radius:12px;margin-bottom:16px;overflow:hidden;box-shadow:0 3px 0 #c79a6455;}
-.lib-h{display:flex;align-items:center;gap:8px;padding:11px 16px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-weight:800;color:#6b4a23;font-size:14px;background:linear-gradient(180deg,#f0dcbe,#ead2ac);border-bottom:2px dashed var(--line);}
+.lib-h{display:flex;align-items:center;gap:8px;padding:11px 16px;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;color:#6b4a23;font-size:14px;background:linear-gradient(180deg,#f0dcbe,#ead2ac);border-bottom:2px dashed var(--line);}
 .lib-empty{padding:18px 16px;color:var(--muted);font-size:13px;}
 .lib-list{display:flex;flex-direction:column;}
 .lib-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);}
@@ -18464,10 +18539,34 @@ const CSS = `
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:14px;}
 .stat{background:#f6e8cf;border:2px solid var(--line);border-radius:11px;padding:13px 15px;box-shadow:0 2px 0 #c79a6455;}
 .sk{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:700;} .sk svg{color:var(--orange);}
-.sv{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;font-size:25px;font-weight:800;margin-top:4px;} .sv small{font-size:13px;color:var(--muted);font-weight:600;margin-left:1px;}
+.sv{font-family:'M PLUS Rounded 1c',sans-serif;font-size:25px;font-weight:800;margin-top:4px;} .sv small{font-size:13px;color:var(--muted);font-weight:600;margin-left:1px;}
 .edit-hint{font-size:12px;color:var(--muted);margin:0 0 8px;}
+.today-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.btn.today-btn{background:#1b2331;color:#f6994a;border:2px solid #f6994a;box-shadow:0 3px 0 #a8551a;padding:10px 20px;}
+.btn.today-btn:hover{background:#243044;}
+.btn.today-btn.on{background:#f6994a;color:#1b2331;border-color:#c76a24;}
+.today-date{font-weight:800;color:var(--muted);font-size:13px;}
+.today-panel{background:#1b2331;border:2px solid #2b3446;border-radius:14px;padding:15px 17px;margin-bottom:16px;color:#f0ebe0;box-shadow:0 4px 0 #0e1420;}
+.today-panel.none{color:#c9bda8;font-size:13px;padding:14px 17px;}
+.tp-h{font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN',sans-serif;font-weight:800;font-size:17px;color:#f6994a;margin-bottom:12px;}
+.tp-loc{margin-bottom:13px;}
+.tp-loc-h{display:flex;align-items:center;gap:7px;font-weight:800;font-size:14px;border-bottom:2px solid;padding-bottom:5px;margin-bottom:7px;}
+.tp-cov{margin-left:auto;font-size:12px;font-weight:700;}
+.tp-cov.ok{color:#7fc46f;} .tp-cov.short{color:#ff8b7a;}
+.tp-n{background:#2b3446;color:#f0ebe0;border-radius:6px;padding:2px 8px;font-size:11px;}
+.tp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;}
+.tp-row{display:flex;align-items:center;gap:8px;background:#232d3e;border-radius:8px;padding:7px 11px;font-size:13px;}
+.tp-row b{min-width:74px;}
+.tp-time{color:#9fb3cc;font-size:12px;font-family:'IBM Plex Mono',monospace;}
+.tp-h2{margin-left:auto;font-weight:800;color:#f6994a;font-size:12px;}
+.tp-empty{color:#8b95a6;font-size:12.5px;padding:4px 2px;}
+.tp-off{margin-top:10px;padding-top:9px;border-top:1px dashed #2b3446;font-size:12px;color:#9aa4b3;}
+.mx th.today{background:#f6994a !important;color:#1b2331;position:relative;}
+.mx th.today .hd{color:#5a3f22;}
+.tdmark{display:block;font-size:9px;font-weight:800;background:#1b2331;color:#f6994a;border-radius:4px;margin-top:2px;padding:1px 0;}
+.mx td.tdcol{box-shadow:inset 2px 0 0 #f6994a,inset -2px 0 0 #f6994a;}
 .vtabs{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap;}
-.vtab{border:2px solid var(--line);background:#fbf2e0;color:var(--muted);border-radius:10px 10px 0 0;padding:8px 18px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;transition:.12s;box-shadow:0 2px 0 #c79a6433;}
+.vtab{border:2px solid var(--line);background:#fbf2e0;color:var(--muted);border-radius:10px 10px 0 0;padding:8px 18px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;transition:.12s;box-shadow:0 2px 0 #c79a6433;}
 .vtab:hover{border-color:var(--muted);}
 .vtab.on{background:var(--orange);border-color:#b5611f;color:#fff;box-shadow:0 3px 0 #a8551a;}
 .cell.other{background:#f0f1f4;color:#8a93a3;font-size:10px;cursor:default;}
@@ -18481,7 +18580,7 @@ const CSS = `
 .mx .c-nm{width:78px;text-align:left;padding-left:9px;font-weight:700;}
 .mx .c-pos{width:96px;font-size:10.5px;color:var(--muted);} .mx .c-pos i{display:block;font-style:normal;font-size:9.5px;opacity:.8;}
 .mx .c-wh{width:62px;} .whc{display:inline-block;font-size:10.5px;font-weight:700;margin:0 1px;}
-.mx .c-tot{width:46px;font-weight:800;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;}
+.mx .c-tot{width:46px;font-weight:800;font-family:'M PLUS Rounded 1c',sans-serif;}
 .cell{cursor:pointer;position:relative;min-width:70px;transition:.1s;}
 .cell:hover{outline:2px solid var(--orange);outline-offset:-2px;}
 .cell.work{background:#fffdf6;} .cell .cell-disp{cursor:pointer;}
@@ -18505,7 +18604,7 @@ const CSS = `
 .cov-row .c-nm{text-align:right;padding-right:9px;}
 .covc.met{color:var(--green);} .covc.over{color:var(--blue);} .covc.short{background:#fdeaea;color:var(--red);} .covc.zero{color:#c9d0db;}
 .viols{background:#fff5f5;border:1px solid #f3c0c0;border-radius:12px;padding:12px 15px;margin-top:14px;}
-.v-h{display:flex;align-items:center;gap:7px;font-weight:800;color:var(--red);font-size:13.5px;margin-bottom:6px;font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Yu Gothic UI','Meiryo',sans-serif;}
+.v-h{display:flex;align-items:center;gap:7px;font-weight:800;color:var(--red);font-size:13.5px;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif;}
 .v-row{font-size:12.5px;color:#a33;padding:2px 0;}
 .note{background:var(--orange-soft);border:1px solid #f9a86a;border-radius:12px;padding:12px 15px;font-size:13px;color:#9a4a08;margin-top:14px;}
 @media(max-width:560px){.period{gap:12px;}.num{width:44px;}.status{width:110px;}}
