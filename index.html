@@ -17522,6 +17522,7 @@ const DEFAULT_EMPS = [
 ];
 const DEFAULT_REQ = { "本社": [50, 50, 50, 50, 50, 0, 0], "八寸町": [0, 0, 0, 0, 0, 0, 0] };
 const toggleIn = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+const APP_VERSION = "1.3.0"; // 更新日: 2026-09-08（呼び出し時に設定が巻き戻る問題を修正）
 const STORE_KEY = "ebl-shift-data-v2";
 const LIB_KEY = "ebl-shift-library-v1";
 // 使い方ガイド（画像は window.GUIDE_IMGS にあるとき表示。HTML版には実画面のスクショが同梱される）
@@ -17535,7 +17536,7 @@ const GUIDE_STEPS = [
     { n: "7", t: "シフト表の見方", d: "タブで「すべて／本社／八寸町」を切りかえられます。いちばん下の「充足/必要」の行で、時間が足りているかチェック：緑＝ぴったり、青＝多め、赤＝足りない。右はしの「時間」列には、その人の週の合計時間と日数が出ます。", img: "table" },
     { n: "8", t: "今日のシフトをすぐ見る", d: "シフト表の上にある「☀️ 今日のシフト」を押すと、今日出勤する人が倉庫ごとに一覧で出ます（名前・時間・何時間か、お休みの人も分かります）。同時に、表の今日の列がオレンジ色で強調されるので、どこを見ればいいか一目で分かります。今日が別の週の場合は、自動でその週に切り替えます（保存してあるシフトがあれば呼び出します）。朝礼や当日の確認にどうぞ。", img: null },
     { n: "9", t: "手直しする", d: "勤務セルをクリックすると、その日の時刻を自由に変えられます（時間は自動計算）。「休みにする」ボタンでその日をお休みに。休みのセルをクリックすると勤務にもどせます。日数を超えると⚠が出ますが、繁忙期はそのまま追加できます。", img: "edit" },
-    { n: "10", t: "シフトを保存・呼び出す・上書きする", d: "「このシフトを保存」で名前をつけて記憶できます（例：6月2週目）。「呼び出す」ボタンで一覧が開き、いつでも元どおりにもどせます。呼び出したあとに直したら、オレンジの「上書き保存」を押せば同じ名前のまま更新されます（確認メッセージが出ます）。別バージョンとして残したいときだけ「新しい名前で保存」を使ってください。画面の「📂編集中：○○」で、いまどのシフトを編集しているかわかります。", img: "lib" },
+    { n: "10", t: "シフトを保存・呼び出す・上書きする", d: "「このシフトを保存」で名前をつけて記憶できます（例：6月2週目）。「呼び出す」ボタンで一覧が開き、いつでも見返せます。呼び出したあとに直したら、オレンジの「上書き保存」を押せば同じ名前のまま更新されます。別バージョンとして残したいときだけ「新しい名前で保存」を。※呼び出しで戻るのは「その週のシフト（誰がいつ入るか）」だけです。従業員の設定（毎週のパターン・定時・勤務場所）と、削除した人はそのまま。過去のシフトを見ても今の設定が巻き戻ることはありません。", img: "lib" },
     { n: "11", t: "印刷・PDF・CSV", d: "「印刷/PDF」から、本社倉庫だけ・八寸町倉庫だけ・両方まとめて、をえらべます。開いたページで印刷、またはPDF保存（ファイル名は自動で「日付_倉庫名」になります）。Excelで使いたいときは「CSV出力」。", img: "print" },
     { n: "12", t: "データはどこに保存される？", d: "入力した内容は、このファイルを開いたパソコンのブラウザに自動で保存されます（右上に「💾保存しました」と出ます）。次に開くと続きから使えます。※別のパソコンには引きつがれないので注意してください。", img: null },
     { n: "13", t: "希望休をなるべく通すコツ", d: "「必要な時間数」の下の緑の数字は、その日に希望休の人を全員休ませても確保できる時間です。⚠赤になっている日は希望休が集中していて、全員は休ませられません（誰かに出てもらう必要があります）。作成後に「希望休が◯件通っていません」と出たら、誰がどの日に出勤になったかが表示されます。その日の必要時間を減らすか、他の人にお願いするか判断してください。なお希望休は『なるべく守る』設定です。ぜったいに休ませたい日は🟥「必ず休み」にしてください。", img: null },
@@ -17688,30 +17689,29 @@ function App() {
         setTimeout(() => setSaveMsg(""), 2200);
     };
     const loadShift = (rec) => {
+        // 呼び出すのは「その週のシフト（配置）」だけ。
+        // 従業員の設定（休みパターン・定時・場所など）は今の設定をそのまま使い、
+        // 削除した人は復活させない（過去のシフトで巻き戻らないようにするため）。
         setWeekStart(rec.weekStart);
         setReq(rec.req);
-        // 従業員設定は「今の設定」を正とし、保存時点の設定で上書きしない。
-        // （古いシフトを呼び出したときに、後から追加した休みパターン等が消えるのを防ぐ）
-        setEmps((cur) => {
-            const byId = Object.fromEntries((rec.emps || []).map((e) => [e.id, e]));
-            const merged = cur.map((e) => {
-                const old = byId[e.id];
-                if (!old)
-                    return e;
-                // その週限りの情報（この週だけの休み・日ごとの時刻）のみ、保存時の内容を復元する
-                return { ...e, off: old.off || {}, timesByDate: old.timesByDate || {} };
-            });
-            // 保存時にいて今はいない人は、参考として末尾に戻す
-            const missing = (rec.emps || []).filter((o) => !cur.some((e) => e.id === o.id));
-            return [...merged, ...missing];
+        const liveIds = new Set(emps.map((e) => e.id));
+        const cleaned = {};
+        LOCATIONS.forEach((l) => {
+            cleaned[l] = {};
+            const src = (rec.assignment && rec.assignment[l]) || {};
+            Object.keys(src).forEach((d) => { cleaned[l][d] = (src[d] || []).filter((id) => liveIds.has(id)); });
         });
-        setAssignment(rec.assignment);
-        setOverrides(rec.overrides || {});
+        const ov = {};
+        Object.keys(rec.overrides || {}).forEach((k) => { const id = k.split("|")[2]; if (liveIds.has(id))
+            ov[k] = rec.overrides[k]; });
+        setAssignment(cleaned);
+        setOverrides(ov);
         setEditing(null);
         setShowLib(false);
         setCurrentShift({ id: rec.id, name: rec.name });
-        setSaveMsg(`「${rec.name}」を呼び出しました`);
-        setTimeout(() => setSaveMsg(""), 2200);
+        const dropped = (rec.emps || []).filter((o) => !liveIds.has(o.id)).length;
+        setSaveMsg(`「${rec.name}」を呼び出しました${dropped ? `（削除済みの${dropped}名は除外）` : ""}`);
+        setTimeout(() => setSaveMsg(""), 2600);
     };
     const deleteShift = (id) => { setSavedShifts((list) => { const next = list.filter((r) => r.id !== id); persistLib(next); return next; }); if (currentShift && currentShift.id === id)
         setCurrentShift(null); };
@@ -17899,7 +17899,10 @@ function App() {
                     React.createElement("div", null,
                         React.createElement("h1", null,
                             "EBL \u30B7\u30D5\u30C8\u4FBF ",
-                            React.createElement(Package, { size: 16, style: { verticalAlign: -2, color: "#f97316" } })),
+                            React.createElement(Package, { size: 16, style: { verticalAlign: -2, color: "#f97316" } }),
+                            React.createElement("span", { className: "ver" },
+                                "v",
+                                APP_VERSION)),
                         React.createElement("p", null, "\u672C\u793E\u30FB\u516B\u5BF8\u753A \uFF0F \u5FC5\u8981\u6642\u9593\u306B\u3082\u3068\u3065\u3044\u3066\u81EA\u52D5\u3067\u304A\u5C4A\u3051"))),
                 React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } },
                     React.createElement("button", { className: "btn guide-btn sm", onClick: () => setShowGuide(true) }, "\uD83D\uDCD6 \u4F7F\u3044\u65B9"),
@@ -18380,6 +18383,7 @@ const CSS = `
 .brand{display:flex;align-items:center;gap:13px;}
 .logo{width:50px;height:50px;border-radius:12px;background:repeating-linear-gradient(45deg,#cf8f54 0 6px,#c2854d 6px 12px);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 3px #00000018,0 4px 0 #a06b3a;border:2px solid #b07c44;transform:rotate(-3deg);}
 .brand h1{font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:24px;margin:0;letter-spacing:.02em;text-shadow:0 1px 0 #fff6;}
+.ver{display:inline-block;margin-left:9px;background:#1b2331;color:#f6994a;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;vertical-align:3px;letter-spacing:.03em;}
 .brand p{margin:2px 0 0;color:var(--muted);font-size:12.5px;}
 .saved{display:inline-flex;align-items:center;gap:6px;background:#e3efd6;color:var(--green);border:1px solid #aecb8c;border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;}
 .save-msg{background:#fff3da;border:1px dashed #d0a45e;color:#8a5a00;border-radius:10px;padding:9px 14px;font-size:12.5px;margin-bottom:14px;}

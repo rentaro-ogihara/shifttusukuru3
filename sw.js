@@ -1,6 +1,6 @@
 // EBL シフト便 Service Worker
 // バージョンを変えると、次回アクセス時に新しいファイルへ更新されます
-const CACHE = 'ebl-shift-v3';
+const CACHE = 'ebl-shift-v4';
 const ASSETS = [
   './',
   './index.html',
